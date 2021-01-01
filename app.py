@@ -1,9 +1,12 @@
 # app.py
 from flask import Flask, request
+from flask_cors import CORS, cross_origin
 from get_cases import query_cases, connect_to_db
 from main import get_data, update_db
 from datetime import datetime
 app = Flask(__name__)
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 @app.route('/cases/', methods=['GET'])
 def cases():
@@ -20,6 +23,7 @@ def adddata():
 
 # A welcome message to test our server
 @app.route('/')
+@cross_origin()
 def index():
     return "<h1>Welcome to our server !!</h1>"
 
