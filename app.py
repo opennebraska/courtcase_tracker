@@ -2,8 +2,7 @@
 from flask import Flask, request
 from flask_cors import CORS, cross_origin
 from get_cases import query_cases
-from main import connect_to_db
-from add_data import get_data, update_db
+from add_data import get_cases, insert_cases
 from datetime import datetime
 app = Flask(__name__)
 cors = CORS(app)
@@ -11,15 +10,19 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 
 @app.route('/cases/', methods=['GET'])
 def cases():
-    return query_cases(connect_to_db(), 'test')
+    landlord = request.args.get("landlord", None)
+    start_date = request.args.get("start_date", None)
+    end_date = request.args.get("end_date", None)
+    return query_cases(landlord=landlord, start_date=start_date, end_date=end_date)
 
 @app.route('/adddata/', methods=['GET'])
 def adddata():
-    # Retrieve the name from url parameter
-    date_time_str = request.args.get("date", None)
-    date_time_obj = datetime.strptime(date_time_str, '%Y-%m-%d')
-    table_rows = get_data(date_time_obj.strftime('%m/%d/%Y'))
-    update_db(connect_to_db(), table_rows)
+    if request.args.get("date", None):
+        date_str = datetime.strptime(request.args.get("date", None), '%Y-%m-%d').strftime('%m/%d/%Y')
+        county = request.args.get("county", "Douglas")
+        cases = get_cases(county, date_str)
+        if cases:
+            insert_cases(cases)
     return "<h1>Thanks!</h1>"
 
 # A welcome message to test our server
