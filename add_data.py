@@ -6,7 +6,7 @@ from main import connect_to_db, CourtCase
 
 def insert_cases(cases):
     query = "INSERT INTO court_cases.court_case (landlord_id, court_date, hearing_type, case_id, county) " \
-            "VALUES (%s, %s, %s, %s, %s)"
+            "VALUES (%s, %s, %s, %s, %s) ON CONFLICT DO NOTHING"
 
     try:
         conn = connect_to_db()
@@ -48,7 +48,7 @@ def get_cases(county, date):
             localdatetime = datetime.strptime(f"{court_date}T{time}", "%m/%d/%YT%I:%M%p")
             utc_dt = local.localize(localdatetime, is_dst=None).astimezone(pytz.utc)
             eviction_cases.append(CourtCase(utc_dt, hearing_type, case_id, landlord, county).get_landlord_id().to_db_tuple())
-    return eviction_cases
+    return set(eviction_cases)
 
 if __name__ == '__main__':
     cases = get_cases('Douglas', '01/15/2021')
